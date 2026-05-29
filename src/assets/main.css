@@ -65,17 +65,6 @@ button {
   gap: 10px;
 }
 
-.nav-button {
-  width: 100%;
-  padding: 13px 14px;
-  border: none;
-  border-radius: 9px;
-  color: #dce6ef;
-  background-color: transparent;
-  text-align: left;
-  transition: background-color 0.2s;
-}
-
 .nav-button:hover {
   background-color: #254666;
 }
@@ -293,7 +282,7 @@ td button:disabled {
 .page-actions {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 16px 0 14px;
+  margin: 16px 0 14px;
 }
 
 .toggle-create-button {
