@@ -82,13 +82,22 @@ async function handleCreatePolicy(request: CreatePolicyRequest) {
         })
 
         if (!response.ok) {
-            throw new Error('新增保單失敗')
+            const errorData = await response.json().catch(() => null)
+
+            throw new Error(
+                errorData?.message ?? '新增保單失敗，請確認資料是否正確',
+            )
         }
+
         successMessage.value = '保單新增成功'
         showCreateForm.value = false
+
         await fetchPolicies()
-    } catch {
-        message.value = '新增保單失敗，請確認資料是否正確'
+    } catch (error) {
+        message.value =
+            error instanceof Error
+                ? error.message
+                : '新增保單失敗，請確認資料是否正確'
     } finally {
         creating.value = false
     }
