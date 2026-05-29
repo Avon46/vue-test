@@ -80,7 +80,7 @@ button {
   background-color: #254666;
 }
 
-.nav-button.active {
+.nav-button.router-link-active {
   background-color: #ffffff;
   color: #16324f;
   font-weight: 600;
@@ -385,4 +385,16 @@ td button:disabled {
 
 .status-value-cancelled {
   color: #b42318;
+}
+.nav-button {
+  display: block;
+  width: 100%;
+  padding: 13px 14px;
+  border: none;
+  border-radius: 9px;
+  color: #dce6ef;
+  background-color: transparent;
+  text-align: left;
+  text-decoration: none;
+  transition: background-color 0.2s;
 }

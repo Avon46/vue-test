@@ -18,24 +18,22 @@ const currentPage = ref<Page>('dashboard')
       </div>
 
       <nav class="nav-menu">
-        <button class="nav-button" :class="{ active: currentPage === 'dashboard' }" @click="currentPage = 'dashboard'">
+        <RouterLink class="nav-button" to="/">
           系統總覽
-        </button>
+        </RouterLink>
 
-        <button class="nav-button" :class="{ active: currentPage === 'customers' }" @click="currentPage = 'customers'">
+        <RouterLink class="nav-button" to="/customers">
           客戶管理
-        </button>
+        </RouterLink>
 
-        <button class="nav-button" :class="{ active: currentPage === 'policies' }" @click="currentPage = 'policies'">
+        <RouterLink class="nav-button" to="/policies">
           保單管理
-        </button>
+        </RouterLink>
       </nav>
     </aside>
 
     <section class="main-content">
-      <DashboardView v-if="currentPage === 'dashboard'" />
-      <CustomerView v-else-if="currentPage === 'customers'" />
-      <PolicyView v-else />
+      <RouterView />
     </section>
   </div>
 </template>
