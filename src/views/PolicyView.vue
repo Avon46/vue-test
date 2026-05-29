@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import type { Policy } from '@/types/policy'
-
+import PolicyForm from '@/components/PolicyForm.vue'
+import type { Customer } from '@/types/customer'
+import type { CreatePolicyRequest, Policy } from '@/types/policy'
 const policies = ref<Policy[]>([])
 const loading = ref(false)
 const message = ref('')
+const customers = ref<Customer[]>([])
+const creating = ref(false)
+const successMessage = ref('')
 
 async function fetchPolicies() {
     loading.value = true
@@ -24,16 +28,58 @@ async function fetchPolicies() {
         loading.value = false
     }
 }
+async function fetchCustomers() {
+    try {
+        const response = await fetch('http://localhost:8080/api/customers')
 
+        if (!response.ok) {
+            throw new Error('取得客戶資料失敗')
+        }
+
+        customers.value = await response.json()
+    } catch {
+        message.value = '無法取得客戶資料'
+    }
+}
 onMounted(() => {
     fetchPolicies()
+    fetchCustomers()
 })
+
+async function handleCreatePolicy(request: CreatePolicyRequest) {
+    creating.value = true
+    message.value = ''
+    successMessage.value = ''
+
+    try {
+        const response = await fetch('http://localhost:8080/api/policies', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(request),
+        })
+
+        if (!response.ok) {
+            throw new Error('新增保單失敗')
+        }
+
+        successMessage.value = '保單新增成功'
+        await fetchPolicies()
+    } catch {
+        message.value = '新增保單失敗，請確認資料是否正確'
+    } finally {
+        creating.value = false
+    }
+}
 </script>
 
 <template>
     <main class="policy-page">
         <h1>保單管理</h1>
-
+        <PolicyForm :customers="customers" @submit="handleCreatePolicy" />
+        <p v-if="creating">保單新增中...</p>
+        <p v-if="successMessage">{{ successMessage }}</p>
         <p v-if="loading">資料讀取中...</p>
 
         <p v-else-if="message">{{ message }}</p>

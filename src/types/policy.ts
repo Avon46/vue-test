@@ -10,3 +10,12 @@ export type Policy = {
   endDate: string
   status: string
 }
+export type CreatePolicyRequest = {
+  customerId: number
+  policyNo: string
+  productName: string
+  premium: number
+  insuredAmount: number
+  startDate: string
+  endDate: string
+}
