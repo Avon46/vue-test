@@ -1,18 +1,25 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import PolicyTable from '@/components/policy/PolicyTable.vue'
 import PolicyForm from '@/components/PolicyForm.vue'
-import type { Customer } from '@/types/customer'
-import type { CreatePolicyRequest, Policy } from '@/types/policy'
-const policies = ref<Policy[]>([])
-const loading = ref(false)
+import { useCustomerStore } from '@/stores/customerStore'
+import { usePolicyStore } from '@/stores/policyStore'
+import type { CreatePolicyRequest } from '@/types/policy'
+
+const customerStore = useCustomerStore()
+const policyStore = usePolicyStore()
+
+const { customers } = storeToRefs(customerStore)
+const { policies, loading } = storeToRefs(policyStore)
+
 const message = ref('')
-const customers = ref<Customer[]>([])
 const creating = ref(false)
 const successMessage = ref('')
 const cancellingId = ref<number | null>(null)
+const showCreateForm = ref(false)
 const searchKeyword = ref('')
 const selectedStatus = ref('ALL')
-const showCreateForm = ref(false)
 
 const filteredPolicies = computed(() => {
     const keyword = searchKeyword.value.trim().toLowerCase()
@@ -31,40 +38,20 @@ const filteredPolicies = computed(() => {
         return matchKeyword && matchStatus
     })
 })
-async function fetchPolicies() {
-    loading.value = true
+onMounted(async () => {
     message.value = ''
 
     try {
-        const response = await fetch('http://localhost:8080/api/policies')
-
-        if (!response.ok) {
-            throw new Error('取得保單資料失敗')
-        }
-
-        policies.value = await response.json()
-    } catch {
-        message.value = '無法取得保單資料，請確認後端是否已啟動'
-    } finally {
-        loading.value = false
+        await Promise.all([
+            policyStore.fetchPolicies(),
+            customerStore.fetchCustomers(),
+        ])
+    } catch (error) {
+        message.value =
+            error instanceof Error
+                ? error.message
+                : '無法取得保單管理資料'
     }
-}
-async function fetchCustomers() {
-    try {
-        const response = await fetch('http://localhost:8080/api/customers')
-
-        if (!response.ok) {
-            throw new Error('取得客戶資料失敗')
-        }
-
-        customers.value = await response.json()
-    } catch {
-        message.value = '無法取得客戶資料'
-    }
-}
-onMounted(() => {
-    fetchPolicies()
-    fetchCustomers()
 })
 
 async function handleCreatePolicy(request: CreatePolicyRequest) {
@@ -73,26 +60,10 @@ async function handleCreatePolicy(request: CreatePolicyRequest) {
     successMessage.value = ''
 
     try {
-        const response = await fetch('http://localhost:8080/api/policies', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(request),
-        })
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => null)
-
-            throw new Error(
-                errorData?.message ?? '新增保單失敗，請確認資料是否正確',
-            )
-        }
+        await policyStore.createPolicy(request)
 
         successMessage.value = '保單新增成功'
         showCreateForm.value = false
-
-        await fetchPolicies()
     } catch (error) {
         message.value =
             error instanceof Error
@@ -108,19 +79,14 @@ async function handleCancelPolicy(id: number) {
     successMessage.value = ''
 
     try {
-        const response = await fetch(`http://localhost:8080/api/policies/${id}/cancel`, {
-            method: 'PATCH',
-        })
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => null)
-            throw new Error(errorData?.message ?? '取消保單失敗')
-        }
+        await policyStore.cancelPolicy(id)
 
         successMessage.value = '保單取消成功'
-        await fetchPolicies()
     } catch (error) {
-        message.value = error instanceof Error ? error.message : '取消保單失敗'
+        message.value =
+            error instanceof Error
+                ? error.message
+                : '取消保單失敗'
     } finally {
         cancellingId.value = null
     }
@@ -161,53 +127,6 @@ async function handleCancelPolicy(id: number) {
 
         <p v-else-if="filteredPolicies.length === 0">查無符合條件的保單</p>
 
-        <table v-else>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>保單編號</th>
-                    <th>客戶姓名</th>
-                    <th>商品名稱</th>
-                    <th>保費</th>
-                    <th>保額</th>
-                    <th>開始日期</th>
-                    <th>結束日期</th>
-                    <th>狀態</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr v-for="policy in filteredPolicies" :key="policy.id">
-                    <td>{{ policy.id }}</td>
-                    <td>{{ policy.policyNo }}</td>
-                    <td>{{ policy.customerName }}</td>
-                    <td>{{ policy.productName }}</td>
-                    <td>{{ policy.premium }}</td>
-                    <td>{{ policy.insuredAmount }}</td>
-                    <td>{{ policy.startDate }}</td>
-                    <td>{{ policy.endDate }}</td>
-                    <td>
-                        <span :class="{
-                            'status-active': policy.status === 'ACTIVE',
-                            'status-cancelled': policy.status === 'CANCELLED',
-                            'status-expired': policy.status === 'EXPIRED',
-                        }">
-                            {{ policy.status }}
-                        </span>
-                    </td>
-                    <td>
-                        <button v-if="policy.status === 'ACTIVE'" type="button" :disabled="cancellingId === policy.id"
-                            @click="handleCancelPolicy(policy.id)">
-                            {{ cancellingId === policy.id ? '取消中...' : '取消保單' }}
-                        </button>
-
-                        <span v-else-if="policy.status === 'CANCELLED'">已取消</span>
-
-                        <span v-else>{{ policy.status }}</span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <PolicyTable v-else :policies="filteredPolicies" :cancelling-id="cancellingId" @cancel="handleCancelPolicy" />
     </main>
 </template>

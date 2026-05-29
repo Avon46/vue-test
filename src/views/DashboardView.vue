@@ -1,16 +1,29 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import type { Customer } from '@/types/customer'
-import type { Policy } from '@/types/policy'
+import { storeToRefs } from 'pinia'
+import SummaryCard from '@/components/dashboard/SummaryCard.vue'
+import { useCustomerStore } from '@/stores/customerStore'
+import { usePolicyStore } from '@/stores/policyStore'
 
-const customers = ref<Customer[]>([])
-const policies = ref<Policy[]>([])
-const loading = ref(false)
+const customerStore = useCustomerStore()
+const policyStore = usePolicyStore()
+
+const { customers, loading: customerLoading } = storeToRefs(customerStore)
+const { policies, loading: policyLoading } = storeToRefs(policyStore)
+
 const message = ref('')
 
-const customerCount = computed(() => customers.value.length)
+const loading = computed(() => {
+    return customerLoading.value || policyLoading.value
+})
 
-const policyCount = computed(() => policies.value.length)
+const customerCount = computed(() => {
+    return customers.value.length
+})
+
+const policyCount = computed(() => {
+    return policies.value.length
+})
 
 const activePolicyCount = computed(() => {
     return policies.value.filter((policy) => policy.status === 'ACTIVE').length
@@ -20,31 +33,20 @@ const cancelledPolicyCount = computed(() => {
     return policies.value.filter((policy) => policy.status === 'CANCELLED').length
 })
 
-async function fetchDashboardData() {
-    loading.value = true
+onMounted(async () => {
     message.value = ''
 
     try {
-        const [customerResponse, policyResponse] = await Promise.all([
-            fetch('http://localhost:8080/api/customers'),
-            fetch('http://localhost:8080/api/policies'),
+        await Promise.all([
+            customerStore.fetchCustomers(),
+            policyStore.fetchPolicies(),
         ])
-
-        if (!customerResponse.ok || !policyResponse.ok) {
-            throw new Error('取得總覽資料失敗')
-        }
-
-        customers.value = await customerResponse.json()
-        policies.value = await policyResponse.json()
-    } catch {
-        message.value = '無法取得系統總覽資料，請確認後端是否已啟動'
-    } finally {
-        loading.value = false
+    } catch (error) {
+        message.value =
+            error instanceof Error
+                ? error.message
+                : '無法取得系統總覽資料，請確認後端是否已啟動'
     }
-}
-
-onMounted(() => {
-    fetchDashboardData()
 })
 </script>
 
@@ -57,25 +59,13 @@ onMounted(() => {
         <p v-else-if="message" class="error-message">{{ message }}</p>
 
         <section v-else class="summary-grid">
-            <article class="summary-card">
-                <p class="summary-label">客戶總數</p>
-                <p class="summary-value">{{ customerCount }}</p>
-            </article>
+            <SummaryCard label="客戶總數" :value="customerCount" />
 
-            <article class="summary-card">
-                <p class="summary-label">保單總數</p>
-                <p class="summary-value">{{ policyCount }}</p>
-            </article>
+            <SummaryCard label="保單總數" :value="policyCount" />
 
-            <article class="summary-card">
-                <p class="summary-label">有效保單</p>
-                <p class="summary-value status-value-active">{{ activePolicyCount }}</p>
-            </article>
+            <SummaryCard label="有效保單" :value="activePolicyCount" tone="active" />
 
-            <article class="summary-card">
-                <p class="summary-label">已取消保單</p>
-                <p class="summary-value status-value-cancelled">{{ cancelledPolicyCount }}</p>
-            </article>
+            <SummaryCard label="已取消保單" :value="cancelledPolicyCount" tone="cancelled" />
         </section>
     </main>
 </template>

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-
+import CustomerTable from '@/components/customer/CustomerTable.vue'
 import CustomerForm from '@/components/CustomerForm.vue'
 import type { CreateCustomerRequest, Customer, UpdateCustomerRequest } from '@/types/customer'
+import { storeToRefs } from 'pinia'
 
-const customers = ref<Customer[]>([])
-const loading = ref(false)
+import { useCustomerStore } from '@/stores/customerStore'
+const customerStore = useCustomerStore()
+const { customers, loading } = storeToRefs(customerStore)
 const message = ref('')
 const creating = ref(false)
 const successMessage = ref('')
@@ -55,27 +57,15 @@ async function handleUpdateCustomer() {
     successMessage.value = ''
 
     try {
-        const response = await fetch(
-            `http://localhost:8080/api/customers/${editingCustomerId.value}`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(editForm.value),
-            },
-        )
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => null)
-            throw new Error(errorData?.message ?? '修改客戶失敗')
-        }
+        await customerStore.updateCustomer(editingCustomerId.value, editForm.value)
 
         successMessage.value = '客戶資料修改成功'
         cancelEditCustomer()
-        await fetchCustomers()
     } catch (error) {
-        message.value = error instanceof Error ? error.message : '修改客戶失敗'
+        message.value =
+            error instanceof Error
+                ? error.message
+                : '修改客戶失敗'
     } finally {
         updating.value = false
     }
@@ -97,21 +87,15 @@ const filteredCustomers = computed(() => {
 })
 
 async function fetchCustomers() {
-    loading.value = true
     message.value = ''
 
     try {
-        const response = await fetch('http://localhost:8080/api/customers')
-
-        if (!response.ok) {
-            throw new Error('取得客戶資料失敗')
-        }
-
-        customers.value = await response.json()
-    } catch {
-        message.value = '無法取得客戶資料，請確認後端是否已啟動'
-    } finally {
-        loading.value = false
+        await customerStore.fetchCustomers()
+    } catch (error) {
+        message.value =
+            error instanceof Error
+                ? error.message
+                : '無法取得客戶資料，請確認後端是否已啟動'
     }
 }
 async function handleCreateCustomer(request: CreateCustomerRequest) {
@@ -120,30 +104,20 @@ async function handleCreateCustomer(request: CreateCustomerRequest) {
     successMessage.value = ''
 
     try {
-        const response = await fetch('http://localhost:8080/api/customers', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(request),
-        })
-
-        if (!response.ok) {
-            throw new Error('新增客戶失敗')
-        }
+        await customerStore.createCustomer(request)
 
         successMessage.value = '客戶新增成功'
         resetFormCount.value++
         showCreateForm.value = false
-
-        await fetchCustomers()
-    } catch {
-        message.value = '新增客戶失敗，請確認輸入資料是否正確'
+    } catch (error) {
+        message.value =
+            error instanceof Error
+                ? error.message
+                : '新增客戶失敗，請確認輸入資料是否正確'
     } finally {
         creating.value = false
     }
 }
-
 onMounted(() => {
     fetchCustomers()
 })
@@ -209,41 +183,6 @@ onMounted(() => {
 
         <p v-else-if="filteredCustomers.length === 0">查無符合條件的客戶</p>
 
-        <table v-else>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>姓名</th>
-                    <th>電話</th>
-                    <th>Email</th>
-                    <th>生日</th>
-                    <th>狀態</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr v-for="customer in filteredCustomers" :key="customer.id">
-                    <td>{{ customer.id }}</td>
-                    <td>{{ customer.name }}</td>
-                    <td>{{ customer.phone }}</td>
-                    <td>{{ customer.email }}</td>
-                    <td>{{ customer.birthday }}</td>
-                    <td>
-                        <span :class="{
-                            'status-active': customer.status === 'ACTIVE',
-                            'status-cancelled': customer.status === 'INACTIVE',
-                        }">
-                            {{ customer.status }}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="edit-button" type="button" @click="startEditCustomer(customer)">
-                            編輯
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <CustomerTable v-else :customers="filteredCustomers" @edit="startEditCustomer" />
     </main>
 </template>
