@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import PolicyForm from '@/components/PolicyForm.vue'
 import type { Customer } from '@/types/customer'
 import type { CreatePolicyRequest, Policy } from '@/types/policy'
@@ -10,7 +10,26 @@ const customers = ref<Customer[]>([])
 const creating = ref(false)
 const successMessage = ref('')
 const cancellingId = ref<number | null>(null)
+const searchKeyword = ref('')
+const selectedStatus = ref('ALL')
 
+const filteredPolicies = computed(() => {
+    const keyword = searchKeyword.value.trim().toLowerCase()
+
+    return policies.value.filter((policy) => {
+        const matchKeyword =
+            !keyword ||
+            policy.policyNo.toLowerCase().includes(keyword) ||
+            policy.customerName.toLowerCase().includes(keyword) ||
+            policy.productName.toLowerCase().includes(keyword)
+
+        const matchStatus =
+            selectedStatus.value === 'ALL' ||
+            policy.status === selectedStatus.value
+
+        return matchKeyword && matchStatus
+    })
+})
 async function fetchPolicies() {
     loading.value = true
     message.value = ''
@@ -101,6 +120,18 @@ async function handleCancelPolicy(id: number) {
 <template>
     <main class="policy-page">
         <h1>保單管理</h1>
+        <section>
+            <h2>查詢保單</h2>
+
+            <input v-model="searchKeyword" type="text" placeholder="輸入保單編號、客戶姓名或商品名稱" />
+
+            <select v-model="selectedStatus">
+                <option value="ALL">全部狀態</option>
+                <option value="ACTIVE">有效中</option>
+                <option value="CANCELLED">已取消</option>
+                <option value="EXPIRED">已到期</option>
+            </select>
+        </section>
         <PolicyForm :customers="customers" @submit="handleCreatePolicy" />
         <p v-if="creating">保單新增中...</p>
         <p v-if="successMessage">{{ successMessage }}</p>
@@ -108,7 +139,7 @@ async function handleCancelPolicy(id: number) {
 
         <p v-else-if="message">{{ message }}</p>
 
-        <p v-else-if="policies.length === 0">目前沒有保單資料</p>
+        <p v-else-if="filteredPolicies.length === 0">查無符合條件的保單</p>
 
         <table v-else>
             <thead>
@@ -127,7 +158,7 @@ async function handleCancelPolicy(id: number) {
             </thead>
 
             <tbody>
-                <tr v-for="policy in policies" :key="policy.id">
+                <tr v-for="policy in filteredPolicies" :key="policy.id">
                     <td>{{ policy.id }}</td>
                     <td>{{ policy.policyNo }}</td>
                     <td>{{ policy.customerName }}</td>
