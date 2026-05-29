@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import DashboardView from './views/DashboardView.vue'
 import CustomerView from './views/CustomerView.vue'
 import PolicyView from './views/PolicyView.vue'
 
-type Page = 'customers' | 'policies'
+type Page = 'dashboard' | 'customers' | 'policies'
 
-const currentPage = ref<Page>('customers')
+const currentPage = ref<Page>('dashboard')
 </script>
 
 <template>
@@ -17,6 +18,10 @@ const currentPage = ref<Page>('customers')
       </div>
 
       <nav class="nav-menu">
+        <button class="nav-button" :class="{ active: currentPage === 'dashboard' }" @click="currentPage = 'dashboard'">
+          系統總覽
+        </button>
+
         <button class="nav-button" :class="{ active: currentPage === 'customers' }" @click="currentPage = 'customers'">
           客戶管理
         </button>
@@ -28,7 +33,8 @@ const currentPage = ref<Page>('customers')
     </aside>
 
     <section class="main-content">
-      <CustomerView v-if="currentPage === 'customers'" />
+      <DashboardView v-if="currentPage === 'dashboard'" />
+      <CustomerView v-else-if="currentPage === 'customers'" />
       <PolicyView v-else />
     </section>
   </div>

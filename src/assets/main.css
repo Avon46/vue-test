@@ -335,3 +335,54 @@ td button:disabled {
 .secondary-button:hover {
   background-color: #f3f6fb;
 }
+/* ===== Dashboard 系統總覽 ===== */
+
+.dashboard-page {
+  max-width: 1220px;
+}
+
+.dashboard-page h1 {
+  margin: 0 0 26px;
+  font-size: 28px;
+  color: #162c46;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 20px;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.summary-card {
+  padding: 24px;
+  border: 1px solid #e3e9f0;
+  border-radius: 14px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(22, 44, 70, 0.05);
+}
+
+.summary-label {
+  margin: 0 0 14px;
+  color: #62748a;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.summary-value {
+  margin: 0;
+  color: #162c46;
+  font-size: 38px;
+  font-weight: 700;
+}
+
+.status-value-active {
+  color: #168044;
+}
+
+.status-value-cancelled {
+  color: #b42318;
+}

@@ -13,6 +13,7 @@ const resetFormCount = ref(0)
 const searchKeyword = ref('')
 const editingCustomerId = ref<number | null>(null)
 const updating = ref(false)
+const showCreateForm = ref(false)
 
 const editForm = ref<UpdateCustomerRequest>({
     name: '',
@@ -21,6 +22,7 @@ const editForm = ref<UpdateCustomerRequest>({
     birthday: '',
 })
 function startEditCustomer(customer: Customer) {
+    showCreateForm.value = false
     editingCustomerId.value = customer.id
     message.value = ''
     successMessage.value = ''
@@ -132,6 +134,7 @@ async function handleCreateCustomer(request: CreateCustomerRequest) {
 
         successMessage.value = '客戶新增成功'
         resetFormCount.value++
+        showCreateForm.value = false
 
         await fetchCustomers()
     } catch {
@@ -155,7 +158,13 @@ onMounted(() => {
 
             <input v-model="searchKeyword" type="text" placeholder="輸入姓名、電話或 Email" />
         </section>
-        <CustomerForm :reset-form-count="resetFormCount" @submit="handleCreateCustomer" />
+        <div class="page-actions">
+            <button class="toggle-create-button" type="button" @click="showCreateForm = !showCreateForm">
+                {{ showCreateForm ? '收起新增表單' : '＋ 新增客戶' }}
+            </button>
+        </div>
+
+        <CustomerForm v-if="showCreateForm" :reset-form-count="resetFormCount" @submit="handleCreateCustomer" />
         <section v-if="editingCustomerId !== null">
             <h2>編輯客戶</h2>
 
