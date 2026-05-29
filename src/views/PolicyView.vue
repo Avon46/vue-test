@@ -9,6 +9,7 @@ const message = ref('')
 const customers = ref<Customer[]>([])
 const creating = ref(false)
 const successMessage = ref('')
+const cancellingId = ref<number | null>(null)
 
 async function fetchPolicies() {
     loading.value = true
@@ -72,6 +73,29 @@ async function handleCreatePolicy(request: CreatePolicyRequest) {
         creating.value = false
     }
 }
+async function handleCancelPolicy(id: number) {
+    cancellingId.value = id
+    message.value = ''
+    successMessage.value = ''
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/policies/${id}/cancel`, {
+            method: 'PATCH',
+        })
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => null)
+            throw new Error(errorData?.message ?? '取消保單失敗')
+        }
+
+        successMessage.value = '保單取消成功'
+        await fetchPolicies()
+    } catch (error) {
+        message.value = error instanceof Error ? error.message : '取消保單失敗'
+    } finally {
+        cancellingId.value = null
+    }
+}
 </script>
 
 <template>
@@ -98,6 +122,7 @@ async function handleCreatePolicy(request: CreatePolicyRequest) {
                     <th>開始日期</th>
                     <th>結束日期</th>
                     <th>狀態</th>
+                    <th>操作</th>
                 </tr>
             </thead>
 
@@ -112,6 +137,16 @@ async function handleCreatePolicy(request: CreatePolicyRequest) {
                     <td>{{ policy.startDate }}</td>
                     <td>{{ policy.endDate }}</td>
                     <td>{{ policy.status }}</td>
+                    <td>
+                        <button v-if="policy.status === 'ACTIVE'" type="button" :disabled="cancellingId === policy.id"
+                            @click="handleCancelPolicy(policy.id)">
+                            {{ cancellingId === policy.id ? '取消中...' : '取消保單' }}
+                        </button>
+
+                        <span v-else-if="policy.status === 'CANCELLED'">已取消</span>
+
+                        <span v-else>{{ policy.status }}</span>
+                    </td>
                 </tr>
             </tbody>
         </table>
