@@ -14,3 +14,9 @@ export type CreateCustomerRequest = {
   identityNumber: string
   birthday: string
 }
+export type UpdateCustomerRequest = {
+  name: string
+  phone: string
+  email: string
+  birthday: string
+}

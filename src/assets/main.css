@@ -309,3 +309,29 @@ td button:disabled {
 .toggle-create-button:hover {
   background-color: #194f86;
 }
+.edit-button {
+  padding: 7px 14px;
+  border: 1px solid #bfd4e8;
+  border-radius: 7px;
+  background-color: #eef6ff;
+  color: #2366a8;
+  font-size: 13px;
+}
+
+.edit-button:hover {
+  background-color: #deedff;
+}
+
+.secondary-button {
+  height: 42px;
+  padding: 0 22px;
+  border: 1px solid #d1dae5;
+  border-radius: 8px;
+  background-color: white;
+  color: #394d65;
+  font-weight: 600;
+}
+
+.secondary-button:hover {
+  background-color: #f3f6fb;
+}
