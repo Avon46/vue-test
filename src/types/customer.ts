@@ -7,3 +7,10 @@ export type Customer = {
   birthday: string
   status: string
 }
+export type CreateCustomerRequest = {
+  name: string
+  phone: string
+  email: string
+  identityNumber: string
+  birthday: string
+}

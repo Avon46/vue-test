@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import type { Customer } from '@/types/customer'
+
+import CustomerForm from '@/components/CustomerForm.vue'
+import type { CreateCustomerRequest, Customer } from '@/types/customer'
 
 const customers = ref<Customer[]>([])
 const loading = ref(false)
 const message = ref('')
+const creating = ref(false)
+const successMessage = ref('')
+const resetFormCount = ref(0)
 
 async function fetchCustomers() {
     loading.value = true
@@ -18,10 +23,38 @@ async function fetchCustomers() {
         }
 
         customers.value = await response.json()
-    } catch (error) {
+    } catch {
         message.value = '無法取得客戶資料，請確認後端是否已啟動'
     } finally {
         loading.value = false
+    }
+}
+async function handleCreateCustomer(request: CreateCustomerRequest) {
+    creating.value = true
+    message.value = ''
+    successMessage.value = ''
+
+    try {
+        const response = await fetch('http://localhost:8080/api/customers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(request),
+        })
+
+        if (!response.ok) {
+            throw new Error('新增客戶失敗')
+        }
+
+        successMessage.value = '客戶新增成功'
+        resetFormCount.value++
+
+        await fetchCustomers()
+    } catch {
+        message.value = '新增客戶失敗，請確認輸入資料是否正確'
+    } finally {
+        creating.value = false
     }
 }
 
@@ -33,6 +66,12 @@ onMounted(() => {
 <template>
     <main class="customer-page">
         <h1>客戶管理</h1>
+
+        <CustomerForm :reset-form-count="resetFormCount" @submit="handleCreateCustomer" />
+
+        <p v-if="creating">客戶新增中...</p>
+
+        <p v-if="successMessage">{{ successMessage }}</p>
 
         <p v-if="loading">資料讀取中...</p>
 
