@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 import CustomerForm from '@/components/CustomerForm.vue'
 import type { CreateCustomerRequest, Customer } from '@/types/customer'
@@ -10,6 +10,23 @@ const message = ref('')
 const creating = ref(false)
 const successMessage = ref('')
 const resetFormCount = ref(0)
+const searchKeyword = ref('')
+
+const filteredCustomers = computed(() => {
+    const keyword = searchKeyword.value.trim().toLowerCase()
+
+    if (!keyword) {
+        return customers.value
+    }
+
+    return customers.value.filter((customer) => {
+        return (
+            customer.name.toLowerCase().includes(keyword) ||
+            customer.phone.toLowerCase().includes(keyword) ||
+            customer.email.toLowerCase().includes(keyword)
+        )
+    })
+})
 
 async function fetchCustomers() {
     loading.value = true
@@ -65,19 +82,24 @@ onMounted(() => {
 
 <template>
     <main class="customer-page">
-        <h1>客戶管理</h1>
 
+        <h1>客戶管理</h1>
+        <section>
+            <h2>查詢客戶</h2>
+
+            <input v-model="searchKeyword" type="text" placeholder="輸入姓名、電話或 Email" />
+        </section>
         <CustomerForm :reset-form-count="resetFormCount" @submit="handleCreateCustomer" />
 
-        <p v-if="creating">客戶新增中...</p>
+        <p v-if="creating" class="info-message">客戶新增中...</p>
 
-        <p v-if="successMessage">{{ successMessage }}</p>
+        <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
 
-        <p v-if="loading">資料讀取中...</p>
+        <p v-if="loading" class="info-message">資料讀取中...</p>
 
-        <p v-else-if="message">{{ message }}</p>
+        <p v-else-if="message" class="error-message">{{ message }}</p>
 
-        <p v-else-if="customers.length === 0">目前沒有客戶資料</p>
+        <p v-else-if="filteredCustomers.length === 0">查無符合條件的客戶</p>
 
         <table v-else>
             <thead>
@@ -92,13 +114,20 @@ onMounted(() => {
             </thead>
 
             <tbody>
-                <tr v-for="customer in customers" :key="customer.id">
+                <tr v-for="customer in filteredCustomers" :key="customer.id">
                     <td>{{ customer.id }}</td>
                     <td>{{ customer.name }}</td>
                     <td>{{ customer.phone }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.birthday }}</td>
-                    <td>{{ customer.status }}</td>
+                    <td>
+                        <span :class="{
+                            'status-active': customer.status === 'ACTIVE',
+                            'status-cancelled': customer.status === 'INACTIVE',
+                        }">
+                            {{ customer.status }}
+                        </span>
+                    </td>
                 </tr>
             </tbody>
         </table>

@@ -9,13 +9,27 @@ const currentPage = ref<Page>('customers')
 </script>
 
 <template>
-  <div>
-    <nav>
-      <button @click="currentPage = 'customers'">客戶管理</button>
-      <button @click="currentPage = 'policies'">保單管理</button>
-    </nav>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <p class="brand-title">Insurance Admin</p>
+        <p class="brand-subtitle">保單管理系統</p>
+      </div>
 
-    <CustomerView v-if="currentPage === 'customers'" />
-    <PolicyView v-else />
+      <nav class="nav-menu">
+        <button class="nav-button" :class="{ active: currentPage === 'customers' }" @click="currentPage = 'customers'">
+          客戶管理
+        </button>
+
+        <button class="nav-button" :class="{ active: currentPage === 'policies' }" @click="currentPage = 'policies'">
+          保單管理
+        </button>
+      </nav>
+    </aside>
+
+    <section class="main-content">
+      <CustomerView v-if="currentPage === 'customers'" />
+      <PolicyView v-else />
+    </section>
   </div>
 </template>

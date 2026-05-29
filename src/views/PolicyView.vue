@@ -12,6 +12,7 @@ const successMessage = ref('')
 const cancellingId = ref<number | null>(null)
 const searchKeyword = ref('')
 const selectedStatus = ref('ALL')
+const showCreateForm = ref(false)
 
 const filteredPolicies = computed(() => {
     const keyword = searchKeyword.value.trim().toLowerCase()
@@ -83,8 +84,8 @@ async function handleCreatePolicy(request: CreatePolicyRequest) {
         if (!response.ok) {
             throw new Error('新增保單失敗')
         }
-
         successMessage.value = '保單新增成功'
+        showCreateForm.value = false
         await fetchPolicies()
     } catch {
         message.value = '新增保單失敗，請確認資料是否正確'
@@ -120,6 +121,7 @@ async function handleCancelPolicy(id: number) {
 <template>
     <main class="policy-page">
         <h1>保單管理</h1>
+
         <section>
             <h2>查詢保單</h2>
 
@@ -132,12 +134,21 @@ async function handleCancelPolicy(id: number) {
                 <option value="EXPIRED">已到期</option>
             </select>
         </section>
-        <PolicyForm :customers="customers" @submit="handleCreatePolicy" />
-        <p v-if="creating">保單新增中...</p>
-        <p v-if="successMessage">{{ successMessage }}</p>
-        <p v-if="loading">資料讀取中...</p>
 
-        <p v-else-if="message">{{ message }}</p>
+        <div class="page-actions">
+            <button class="toggle-create-button" type="button" @click="showCreateForm = !showCreateForm">
+                {{ showCreateForm ? '收起新增表單' : '＋ 新增保單' }}
+            </button>
+        </div>
+
+        <PolicyForm v-if="showCreateForm" :customers="customers" @submit="handleCreatePolicy" />
+
+        <p v-if="creating" class="info-message">保單新增中...</p>
+        <p v-if="successMessage" class="success-message">{{ successMessage }}</p>
+
+        <p v-if="loading" class="info-message">資料讀取中...</p>
+
+        <p v-else-if="message" class="error-message">{{ message }}</p>
 
         <p v-else-if="filteredPolicies.length === 0">查無符合條件的保單</p>
 
@@ -167,7 +178,15 @@ async function handleCancelPolicy(id: number) {
                     <td>{{ policy.insuredAmount }}</td>
                     <td>{{ policy.startDate }}</td>
                     <td>{{ policy.endDate }}</td>
-                    <td>{{ policy.status }}</td>
+                    <td>
+                        <span :class="{
+                            'status-active': policy.status === 'ACTIVE',
+                            'status-cancelled': policy.status === 'CANCELLED',
+                            'status-expired': policy.status === 'EXPIRED',
+                        }">
+                            {{ policy.status }}
+                        </span>
+                    </td>
                     <td>
                         <button v-if="policy.status === 'ACTIVE'" type="button" :disabled="cancellingId === policy.id"
                             @click="handleCancelPolicy(policy.id)">

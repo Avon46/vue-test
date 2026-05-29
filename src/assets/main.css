@@ -1,0 +1,311 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: 'Segoe UI', 'Noto Sans TC', Arial, sans-serif;
+  color: #1f2937;
+  background-color: #f3f6fb;
+}
+
+body {
+  margin: 0;
+  min-width: 1100px;
+  background-color: #f3f6fb;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* ===== 整體後台版面 ===== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 232px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  background-color: #16324f;
+  color: white;
+  padding: 28px 18px;
+}
+
+.brand {
+  margin-bottom: 38px;
+  padding: 0 10px;
+}
+
+.brand-title {
+  margin: 0 0 6px;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.brand-subtitle {
+  margin: 0;
+  color: #b9c8d8;
+  font-size: 13px;
+}
+
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav-button {
+  width: 100%;
+  padding: 13px 14px;
+  border: none;
+  border-radius: 9px;
+  color: #dce6ef;
+  background-color: transparent;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.nav-button:hover {
+  background-color: #254666;
+}
+
+.nav-button.active {
+  background-color: #ffffff;
+  color: #16324f;
+  font-weight: 600;
+}
+
+.main-content {
+  flex: 1;
+  padding: 34px 40px;
+}
+
+/* ===== 頁面共用 ===== */
+
+.customer-page,
+.policy-page {
+  max-width: 1220px;
+}
+
+.customer-page h1,
+.policy-page h1 {
+  margin: 0 0 26px;
+  font-size: 28px;
+  color: #162c46;
+}
+
+.customer-page h2,
+.policy-page h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
+  color: #1f3652;
+}
+
+.customer-page section,
+.policy-page section {
+  margin-bottom: 24px;
+  padding: 24px;
+  border: 1px solid #e3e9f0;
+  border-radius: 14px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(22, 44, 70, 0.05);
+}
+
+/* ===== 表單 ===== */
+
+form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(190px, 1fr));
+  gap: 18px 20px;
+  align-items: end;
+}
+
+form div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #394d65;
+}
+
+input,
+select {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #d1dae5;
+  border-radius: 8px;
+  background-color: white;
+  color: #23364d;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #3678bd;
+  box-shadow: 0 0 0 3px rgba(54, 120, 189, 0.13);
+}
+
+form button {
+  height: 42px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 8px;
+  background-color: #2366a8;
+  color: white;
+  font-weight: 600;
+}
+
+form button:hover {
+  background-color: #194f86;
+}
+
+/* ===== 訊息 ===== */
+
+.success-message {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid #b6e3ca;
+  border-radius: 8px;
+  background-color: #eaf8f0;
+  color: #18733d;
+}
+
+.error-message {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid #f1c0c0;
+  border-radius: 8px;
+  background-color: #fff0f0;
+  color: #b42318;
+}
+
+.info-message {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #eaf2fb;
+  color: #2366a8;
+}
+
+/* ===== 表格 ===== */
+
+table {
+  width: 100%;
+  margin-top: 18px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #e3e9f0;
+  border-radius: 12px;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(22, 44, 70, 0.05);
+}
+
+thead {
+  background-color: #eef3f8;
+}
+
+th {
+  padding: 15px 14px;
+  color: #445a72;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+td {
+  padding: 15px 14px;
+  border-top: 1px solid #edf1f5;
+  color: #283c53;
+  font-size: 14px;
+}
+
+tbody tr:hover {
+  background-color: #f8fbff;
+}
+
+td button {
+  padding: 7px 12px;
+  border: 1px solid #e2a1a1;
+  border-radius: 7px;
+  background-color: #fff3f3;
+  color: #b42318;
+  font-size: 13px;
+}
+
+td button:hover {
+  background-color: #ffe2e2;
+}
+
+td button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ===== 狀態標籤，之後可套到表格 status ===== */
+
+.status-active {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #e8f7ef;
+  color: #168044;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-cancelled {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #fceaea;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-expired {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #f2f4f7;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px 0 14px;
+}
+
+.toggle-create-button {
+  height: 44px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 9px;
+  background-color: #2366a8;
+  color: white;
+  font-weight: 600;
+}
+
+.toggle-create-button:hover {
+  background-color: #194f86;
+}
